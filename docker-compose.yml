@@ -1,0 +1,17 @@
+name: high-performance-transaction-engine
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: database
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis/redis-stack:7.2.0-v15
+    container_name: redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+
