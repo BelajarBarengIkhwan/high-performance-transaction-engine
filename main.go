@@ -5,17 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
 	logger := logrus.New()
+	db := InitDatabase()
 	service := NewService(db, logger)
 	api := fiber.New()
 	api.Get("/balance/:acc", func(c *fiber.Ctx) error {

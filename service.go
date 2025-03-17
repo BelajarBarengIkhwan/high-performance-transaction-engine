@@ -28,7 +28,15 @@ type Service struct {
 }
 
 func NewService(db *gorm.DB, logger *logrus.Logger) *Service {
-	return &Service{db: db, logger: logger}
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+		DB:   0,
+	})
+	err := rdb.Ping(context.Background()).Err()
+	if err != nil {
+		panic(err)
+	}
+	return &Service{db: db, redis: rdb, logger: logger}
 }
 
 func (s *Service) GetBalance(acc string) (decimal.Decimal, error) {
