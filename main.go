@@ -10,7 +10,8 @@ import (
 func main() {
 	logger := logrus.New()
 	db := InitDatabase()
-	service := NewService(db, logger)
+	rdb := InitRedis()
+	service := NewService(db, rdb, logger)
 	api := fiber.New()
 	api.Get("/balance/:acc", func(c *fiber.Ctx) error {
 		acc := c.Params("acc")

@@ -27,15 +27,7 @@ type Service struct {
 	logger *logrus.Logger
 }
 
-func NewService(db *gorm.DB, logger *logrus.Logger) *Service {
-	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-		DB:   0,
-	})
-	err := rdb.Ping(context.Background()).Err()
-	if err != nil {
-		panic(err)
-	}
+func NewService(db *gorm.DB, rdb *redis.Client, logger *logrus.Logger) *Service {
 	return &Service{db: db, redis: rdb, logger: logger}
 }
 
