@@ -94,7 +94,7 @@ func (s *Service) FastWithdraw(acc string, amount decimal.Decimal) (err error) {
 	var balanceBefore decimal.Decimal
 	var balanceAfter decimal.Decimal
 	ctx := context.Background()
-	redisKey := fmt.Sprint(RedisAccountKey, acc)
+	redisKey := fmt.Sprintf(RedisAccountKey, acc)
 	err = s.redis.Watch(ctx, func(tx *redis.Tx) error {
 		balanceStr, internalError := tx.Get(ctx, redisKey).Result()
 		if internalError != nil {
@@ -118,7 +118,7 @@ func (s *Service) FastWithdraw(acc string, amount decimal.Decimal) (err error) {
 		}
 
 		balanceAfter = balance.Sub(amount)
-		internalError = tx.IncrBy(ctx, redisKey, amount.Neg().IntPart()).Err()
+		internalError = tx.Set(ctx, redisKey, balanceAfter.IntPart(), time.Duration(0)).Err()
 		if internalError != nil {
 			err = ErrFailedUpdateBalance
 			s.logger.WithFields(logrus.Fields{"acc": acc, "error": internalError, "amount": amount.String()}).Error(err.Error())
