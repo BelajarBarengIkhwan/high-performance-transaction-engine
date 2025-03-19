@@ -17,7 +17,7 @@ func main() {
 	logger := logrus.New()
 	db := InitDatabase()
 	rdb := InitRedis()
-	Seeding(NUM_ACCOUNT, INITIAL_BALANCE, db, rdb)
+	Seeding(NUM_ACCOUNT, INITIAL_BALANCE, db, rdb, logger)
 	service := NewService(db, rdb, logger)
 	api := fiber.New()
 	api.Get("/balance/:acc", func(c *fiber.Ctx) error {
@@ -29,4 +29,5 @@ func main() {
 		}
 		return c.JSON(balance)
 	})
+	api.Listen(":8080")
 }
