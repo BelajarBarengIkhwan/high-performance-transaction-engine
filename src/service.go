@@ -95,7 +95,8 @@ func (s *Service) FastWithdraw(acc string, amount decimal.Decimal) (err error) {
 	var balanceAfter decimal.Decimal
 	ctx := context.Background()
 	redisKey := fmt.Sprintf(RedisAccountKey, acc)
-	err = s.redis.Watch(ctx, func(tx *redis.Tx) error {
+	maxRetries := 100
+	txf := func(tx *redis.Tx) error {
 		balanceStr, internalError := tx.Get(ctx, redisKey).Result()
 		if internalError != nil {
 			err = ErrLockAccount
@@ -118,15 +119,27 @@ func (s *Service) FastWithdraw(acc string, amount decimal.Decimal) (err error) {
 		}
 
 		balanceAfter = balance.Sub(amount)
-		internalError = tx.Set(ctx, redisKey, balanceAfter.IntPart(), time.Duration(0)).Err()
+		_, internalError = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			internalError = pipe.Set(ctx, redisKey, balanceAfter.IntPart(), time.Duration(0)).Err()
+			if internalError != nil {
+				s.logger.WithFields(logrus.Fields{"acc": acc, "error": internalError, "balance_before": balanceBefore.String(), "balance_after": balanceAfter.String(), "amount": amount.String()}).Error(internalError.Error())
+			}
+			return internalError
+		})
 		if internalError != nil {
 			err = ErrFailedUpdateBalance
 			s.logger.WithFields(logrus.Fields{"acc": acc, "error": internalError, "amount": amount.String()}).Error(err.Error())
 			return err
 		}
 
-		return nil
-	}, redisKey)
+		return internalError
+	}
+	for i := 0; i < maxRetries; i++ {
+		err = s.redis.Watch(ctx, txf, redisKey)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		s.logger.WithFields(logrus.Fields{"acc": acc, "error": err, "amount": amount.String()}).Error("withdraw failed")
 	} else {
