@@ -1,0 +1,17 @@
+{
+  "name": "high-performance-transaction-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ikhwan Rizqy Nurzaman",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/k6": "^0.57.1"
+  }
+}
