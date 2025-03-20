@@ -149,7 +149,7 @@ func (s *Service) FastWithdraw(acc string, amount decimal.Decimal) (err error) {
 }
 
 func (s *Service) FastGetBalance(acc string) (balance decimal.Decimal, err error) {
-	balanceString, err := s.redis.Get(context.Background(), fmt.Sprint(RedisAccountKey, acc)).Result()
+	balanceString, err := s.redis.Get(context.Background(), fmt.Sprintf(RedisAccountKey, acc)).Result()
 	if err != nil || balanceString == "" {
 		err = ErrAccountNotFound
 		s.logger.WithFields(logrus.Fields{"acc": acc, "error": err}).Error(err.Error())
@@ -169,7 +169,7 @@ func (s *Service) FastDeposit(acc string, amount decimal.Decimal) (err error) {
 	var balanceBefore decimal.Decimal
 	var balanceAfter decimal.Decimal
 	err = s.redis.Watch(context.Background(), func(tx *redis.Tx) error {
-		balanceString, err := tx.Get(context.Background(), fmt.Sprint(RedisAccountKey, acc)).Result()
+		balanceString, err := tx.Get(context.Background(), fmt.Sprintf(RedisAccountKey, acc)).Result()
 		if err != nil || balanceString == "" {
 			err = ErrAccountNotFound
 			s.logger.WithFields(logrus.Fields{"acc": acc, "error": err}).Error(err.Error())

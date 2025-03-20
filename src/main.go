@@ -65,5 +65,23 @@ func main() {
 		}
 		return c.SendStatus(http.StatusNoContent)
 	})
+	api.Get("/balance/:acc", func(c *fiber.Ctx) error {
+		acc := c.Params("acc")
+		balance, err := service.GetBalance(acc)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(fiber.Map{"remark": "inquiry balance failed"})
+		}
+		return c.JSON(fiber.Map{"balance": balance.String()})
+	})
+	api.Get("/fast-balance/:acc", func(c *fiber.Ctx) error {
+		acc := c.Params("acc")
+		balance, err := service.FastGetBalance(acc)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(fiber.Map{"remark": "inquiry balance failed"})
+		}
+		return c.JSON(fiber.Map{"balance": balance.String()})
+	})
 	api.Listen(":8080")
 }
